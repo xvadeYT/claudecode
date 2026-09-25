@@ -1,0 +1,690 @@
+<title>Reel Blotter 1000</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --ground:#F7F5F0; --panel:#FFFDF8; --panel-2:#F2EFE8; --ink:#14120E; --muted:#6E6858;
+    --faint:#98917F; --rule:#E2DCD0; --accent:#B4641E; --accent-s:#F0E2D2;
+    --done:#47683C; --done-s:#E4EADF; --on-accent:#FFFDF8; --shadow:0 1px 2px rgba(20,18,14,.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme:dark;
+      --ground:#100F0D; --panel:#1A1815; --panel-2:#151411; --ink:#F2EFE7; --muted:#948C7C;
+      --faint:#6B6456; --rule:#2C2925; --accent:#E09442; --accent-s:#3A2A16;
+      --done:#8FB37F; --done-s:#212B1C; --on-accent:#100F0D; --shadow:0 1px 2px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme:dark;
+    --ground:#100F0D; --panel:#1A1815; --panel-2:#151411; --ink:#F2EFE7; --muted:#948C7C;
+    --faint:#6B6456; --rule:#2C2925; --accent:#E09442; --accent-s:#3A2A16;
+    --done:#8FB37F; --done-s:#212B1C; --on-accent:#100F0D; --shadow:0 1px 2px rgba(0,0,0,.4);
+  }
+  * { box-sizing:border-box; }
+  body {
+    background:var(--ground); color:var(--ink); margin:0;
+    font-family:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
+    font-size:15px; line-height:1.45;
+  }
+  .mono { font-family:"IBM Plex Mono",ui-monospace,monospace; }
+  .wrap { max-width:680px; margin:0 auto; padding-inline:16px; padding-block:0 56px; }
+
+  header {
+    position:sticky; top:env(safe-area-inset-top,0px); z-index:10;
+    background:var(--ground); border-bottom:1px solid var(--rule);
+    padding-block:14px 10px;
+  }
+  .brandrow { display:flex; align-items:baseline; justify-content:space-between; gap:12px; }
+  .brand { display:flex; align-items:center; gap:4px 10px; min-width:0; flex-wrap:wrap; }
+  h1 { font-size:19px; font-weight:700; margin:0; letter-spacing:-.01em; white-space:nowrap; }
+  .count {
+    font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:13px; font-weight:500;
+    color:var(--muted); font-variant-numeric:tabular-nums; white-space:nowrap;
+  }
+  .count b { color:var(--accent); font-weight:600; }
+  .bar { height:3px; background:var(--rule); border-radius:2px; margin-top:10px; overflow:hidden; }
+  .bar i { display:block; height:100%; width:0%; background:var(--accent); transition:width .25s ease; }
+
+  .sync {
+    display:inline-flex; align-items:center; gap:5px; min-width:0;
+    font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:500;
+    color:var(--faint); white-space:nowrap;
+  }
+  .sync i { flex:none; width:7px; height:7px; border-radius:50%; background:var(--faint); }
+  .sync[data-state="saved"] { color:var(--done); }
+  .sync[data-state="saved"] i { background:var(--done); }
+  .sync[data-state="saving"] i { background:var(--accent); }
+  .sync[data-state="error"], .sync[data-state="local"] { color:var(--accent); }
+  .sync[data-state="error"] i { background:var(--accent); }
+  .sync[data-state="local"] i { background:transparent; box-shadow:inset 0 0 0 1.5px var(--accent); }
+  .syncnote { margin:8px 0 0; font-size:12px; line-height:1.4; color:var(--accent); }
+
+  /* ---------- up next ---------- */
+  .next {
+    margin-top:18px; background:var(--panel); border:1px solid var(--accent);
+    border-radius:8px; padding:14px 15px 13px; box-shadow:var(--shadow);
+  }
+  .eyebrow {
+    font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:600;
+    letter-spacing:.09em; text-transform:uppercase; color:var(--accent);
+  }
+  .when {
+    font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:22px; font-weight:600;
+    letter-spacing:-.01em; margin:4px 0 2px; font-variant-numeric:tabular-nums;
+  }
+  .when small { font-size:13px; font-weight:500; color:var(--muted); letter-spacing:0; }
+  .next .quote-lg { font-size:17px; font-weight:600; letter-spacing:-.012em; margin:8px 0 4px; text-wrap:balance; }
+  .next .meta { font-size:12.5px; color:var(--muted); margin-bottom:12px; }
+  .then { margin-top:10px; font-size:12.5px; color:var(--muted); }
+  .then b { color:var(--ink); font-weight:600; }
+
+  /* ---------- schedule settings ---------- */
+  details.sched {
+    margin-top:12px; background:var(--panel); border:1px solid var(--rule); border-radius:8px;
+  }
+  details.sched summary {
+    list-style:none; cursor:pointer; padding:12px 15px; display:flex; gap:10px; align-items:center;
+  }
+  details.sched summary::-webkit-details-marker { display:none; }
+  details.sched summary .st { font-weight:600; font-size:14px; }
+  details.sched summary .sv {
+    margin-left:auto; font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11.5px;
+    color:var(--muted); text-align:right; font-variant-numeric:tabular-nums;
+  }
+  details.sched summary::after { content:"+"; font-family:"IBM Plex Mono",monospace; color:var(--faint); }
+  details.sched[open] summary::after { content:"\2212"; }
+  .schedbody { padding:0 15px 15px; border-top:1px solid var(--rule); }
+  .grid {
+    display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:10px 12px; margin-top:12px;
+  }
+  .grid label, .startrow label {
+    display:flex; flex-direction:column; gap:4px;
+    font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:10.5px;
+    letter-spacing:.07em; text-transform:uppercase; color:var(--muted);
+  }
+  input[type="time"], input[type="date"], #search, #weekjump {
+    padding:8px 10px; border-radius:6px; border:1px solid var(--rule);
+    background:var(--panel-2); color:var(--ink);
+    font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:14px; min-width:0; width:100%;
+  }
+  .startrow { display:flex; gap:12px; align-items:flex-end; margin-top:12px; flex-wrap:wrap; }
+  .startrow label { flex:1 1 160px; }
+  .why { font-size:13px; color:var(--muted); margin:14px 0 0; }
+  .why p { margin:0 0 8px; }
+  .why b { color:var(--ink); font-weight:600; }
+  .reset {
+    font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:600;
+    letter-spacing:.07em; text-transform:uppercase; padding:9px 12px; border-radius:5px;
+    cursor:pointer; border:1px solid var(--rule); background:transparent; color:var(--muted);
+  }
+
+  /* ---------- controls ---------- */
+  .controls { display:flex; gap:8px; margin-top:18px; flex-wrap:wrap; align-items:center; }
+  #search { flex:1 1 160px; font-family:"Archivo",sans-serif; background:var(--panel); width:auto; }
+  #search::placeholder { color:var(--faint); }
+  #weekjump { flex:0 0 auto; width:auto; background:var(--panel); }
+  .filters { display:flex; gap:6px; }
+  .filters button, .pager button {
+    font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px;
+    letter-spacing:.06em; text-transform:uppercase; padding:8px 11px;
+    border-radius:99px; cursor:pointer; border:1px solid var(--rule);
+    background:transparent; color:var(--muted);
+  }
+  .filters button[aria-pressed="true"] {
+    background:var(--accent-s); border-color:var(--accent); color:var(--accent); font-weight:600;
+  }
+
+  /* ---------- list ---------- */
+  .weekband {
+    display:flex; align-items:center; gap:10px; margin:26px 0 12px;
+    font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px;
+    font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:var(--accent);
+  }
+  .weekband .line { flex:1; height:2px; background:var(--accent-s); }
+  .daygroup { margin-top:20px; }
+  .dayhead {
+    display:flex; align-items:baseline; gap:8px; margin-bottom:8px;
+    font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px;
+    text-transform:uppercase; letter-spacing:.08em; color:var(--faint);
+  }
+  .dayhead .dn { color:var(--ink); font-weight:600; }
+  .dayhead .line { flex:1; height:1px; background:var(--rule); }
+  .dayhead .tick { color:var(--done); font-weight:600; }
+  .daygroup.today .dn { color:var(--accent); }
+
+  ol { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px; }
+  li {
+    background:var(--panel); border:1px solid var(--rule); border-radius:6px;
+    padding:12px 13px; box-shadow:var(--shadow);
+  }
+  li.is-done { background:transparent; box-shadow:none; opacity:.55; }
+  .top { display:flex; align-items:center; gap:8px; margin-bottom:7px; flex-wrap:wrap; }
+  .time {
+    font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11.5px; font-weight:600;
+    color:var(--on-accent); background:var(--accent); border-radius:3px; padding:2px 6px;
+    font-variant-numeric:tabular-nums; white-space:nowrap;
+  }
+  li.is-done .time { background:var(--done-s); color:var(--done); }
+  .file {
+    font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:600;
+    color:var(--accent); font-variant-numeric:tabular-nums; white-space:nowrap;
+  }
+  .title { font-size:18px; font-weight:600; letter-spacing:-.015em; margin:0 0 4px; }
+  li.is-done .title { text-decoration:line-through; text-decoration-color:var(--faint); }
+  .onscreen { font-size:13.5px; color:var(--muted); margin:0 0 8px; text-wrap:pretty; }
+  .onscreen::before { content:"on screen: "; color:var(--faint); font-family:"IBM Plex Mono",monospace; font-size:11px; }
+  .tags {
+    font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px;
+    color:var(--muted); line-height:1.55; word-break:break-word; margin-bottom:10px;
+  }
+  .actions { display:flex; gap:8px; align-items:center; }
+  .copy, .mark {
+    min-height:40px; font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:600;
+    letter-spacing:.07em; text-transform:uppercase; padding:8px 13px; border-radius:4px; cursor:pointer;
+  }
+  .copy { flex:1; border:1px solid var(--accent); background:var(--accent-s); color:var(--accent); }
+  .copy.ok { border-color:var(--done); background:var(--done-s); color:var(--done); }
+  .mark { flex:0 0 110px; border:1px solid var(--rule); background:transparent; color:var(--muted); }
+  .mark[aria-pressed="true"] { border-color:var(--done); color:var(--done); background:var(--done-s); }
+  button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible {
+    outline:2px solid var(--accent); outline-offset:2px;
+  }
+
+  .pager {
+    display:flex; gap:8px; align-items:center; justify-content:center;
+    margin-top:22px; padding-top:16px; border-top:1px solid var(--rule);
+  }
+  .pager span {
+    font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px;
+    color:var(--muted); font-variant-numeric:tabular-nums;
+  }
+  .pager button:disabled { opacity:.35; cursor:default; }
+  .empty { padding:40px 0; text-align:center; color:var(--faint); font-size:14px; }
+  footer { margin-top:24px; padding-top:14px; border-top:1px solid var(--rule); font-size:12.5px; color:var(--faint); }
+  footer p { margin:0 0 6px; }
+  code { font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:.92em; }
+  @media (prefers-reduced-motion: reduce) { * { transition:none !important; } }
+</style>
+
+<header>
+  <div class="wrap" style="padding-block:0">
+    <div class="brandrow">
+      <div class="brand">
+        <h1>Reel Blotter 1000</h1>
+        <span class="sync" id="sync" data-state="loading" role="status" aria-live="polite"><i aria-hidden="true"></i><span id="syncText">Loading…</span></span>
+      </div>
+      <span class="count"><b id="cDone">0</b> / 1000 posted</span>
+    </div>
+    <div class="bar"><i id="cBar"></i></div>
+    <p class="syncnote" id="syncNote" hidden></p>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="next" id="next" aria-labelledby="nextLabel"></section>
+
+  <details class="sched" id="sched">
+    <summary>
+      <span class="st">Posting times</span>
+      <span class="sv" id="schedSummary"></span>
+    </summary>
+    <div class="schedbody">
+      <div class="grid">
+        <label for="wd1">Mon–Fri · post 1<input type="time" id="wd1" step="900"></label>
+        <label for="wd2">Mon–Fri · post 2<input type="time" id="wd2" step="900"></label>
+        <label for="we1">Sat–Sun · post 1<input type="time" id="we1" step="900"></label>
+        <label for="we2">Sat–Sun · post 2<input type="time" id="we2" step="900"></label>
+      </div>
+      <div class="startrow">
+        <label for="startDate">Day 1 date<input type="date" id="startDate"></label>
+        <button class="reset" id="resetSched" type="button">Use recommended</button>
+      </div>
+      <div class="why">
+        <p><b>Why these times.</b> Midday catches the lunch scroll, and the evening slot lands just before the 8–10 PM peak, when teens and young adults spend the most time on Reels. Posting a little before the peak means your reel is already out when the first wave of viewers shows up. That first wave is who Instagram tests it on.</p>
+        <p><b>After two weeks, check your own numbers.</b> Go to Professional dashboard → Total followers → Most active times, and move these to match your audience. Every date and time in the list updates.</p>
+        <p>Times are in your phone's time zone. What gets a reel pushed is the first 3 seconds, watch time, and how many people send it or save it. The time you post only helps it get seen at the start.</p>
+      </div>
+    </div>
+  </details>
+
+  <div class="controls">
+    <input id="search" type="search" placeholder="Search quotes or reel #">
+    <select id="weekjump" aria-label="Jump to week"></select>
+    <div class="filters">
+      <button type="button" data-f="all" aria-pressed="true">All</button>
+      <button type="button" data-f="todo" aria-pressed="false">To&nbsp;do</button>
+      <button type="button" data-f="done" aria-pressed="false">Posted</button>
+    </div>
+  </div>
+
+  <div id="list"></div>
+
+  <div class="pager">
+    <button id="prev" type="button">&larr; Prev week</button>
+    <span id="pageinfo">&nbsp;</span>
+    <button id="next-week" type="button">Next week &rarr;</button>
+  </div>
+
+  <footer>
+    <p>Two reels a day for 500 days. Files render to <code>Downloads\REELS_GENZ_V4\reel_0001.mp4 … reel_1000.mp4</code> from <code>QUOTES_GENZ_V4.txt</code>, where line 1 is reel_0001.</p>
+    <p>In Instagram: pick the reel → add music &amp; cover → tap <b>Copy</b> here and paste → <b>More options → Schedule this Reel</b> at the time shown. Instagram lets you schedule up to 75 days ahead, so do it a few weeks at a time.</p>
+    <p id="saveNote">Posted taps save to your account, so your progress follows you to any device.</p>
+  </footer>
+</div>
+
+<script>
+const DATA = __DATA__;   // [captionTitle, onScreenQuote], index 0 = reel_0001, already in posting order
+const PER_DAY = 2;
+const DAYS = Math.ceil(DATA.length / PER_DAY);
+const WEEKS = Math.ceil(DAYS / 7);
+
+// Instagram caps posts at 5 hashtags, so every set is exactly 5.
+const TAGSETS = [
+  "#relatable #motivation #motivationalquotes #successmindset #explorepage",
+  "#relatable #motivation #selfimprovement #discipline #reels",
+  "#relatable #motivation #personalgrowth #mindset #reelsinstagram",
+  "#relatable #motivation #motivationalquotes #hustle #viralvideo",
+  "#relatable #motivation #inspiration #successmindset #explorepage",
+  "#relatable #motivation #selfimprovement #grind #reels"
+];
+// Sends and saves are what push a reel to non-followers, so every caption asks for one.
+const CTAS = [
+  "send this to someone who needs it today.",
+  "save this for the days you want to quit.",
+  "send this to the one who's building with you.",
+  "follow for 2 a day. no days off.",
+  "save this. read it again in a year.",
+  "comment \"locked in\" if this is you."
+];
+const RECOMMENDED = { wd1:"12:00", wd2:"19:00", we1:"11:00", we2:"20:00", start:"2026-09-26" };
+
+/* ---------- helpers ---------- */
+function readJSON(key){ try { const r = localStorage.getItem(key); return r ? JSON.parse(r) : null; } catch(e){ return null; } }
+function writeJSON(key, v){ try { localStorage.setItem(key, JSON.stringify(v)); } catch(e){} }
+const pad = (n, w) => String(n).padStart(w, "0");
+const validN = n => Number.isInteger(n) && n >= 1 && n <= DATA.length;
+const validTime = t => typeof t === "string" && /^\d{2}:\d{2}$/.test(t);
+const validDate = d => typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d);
+const fileName = n => "reel_" + pad(n, 4) + ".mp4";
+const dayOf = n => Math.ceil(n / PER_DAY);
+const slotOf = n => ((n - 1) % PER_DAY) + 1;
+const weekOfDay = d => Math.ceil(d / 7);
+
+/* ---------- schedule ---------- */
+const SCHED_KEY = "reel-blotter-v4-schedule";
+let sched = Object.assign({}, RECOMMENDED, sanitizeSched(readJSON(SCHED_KEY) || {}));
+function sanitizeSched(s){
+  const out = {};
+  ["wd1","wd2","we1","we2"].forEach(k => { if (validTime(s[k])) out[k] = s[k]; });
+  if (validDate(s.start)) out.start = s.start;
+  return out;
+}
+function dateOfDay(d){
+  const [y, m, dd] = sched.start.split("-").map(Number);
+  return new Date(y, m - 1, dd + (d - 1));
+}
+function isWeekend(dt){ const w = dt.getDay(); return w === 0 || w === 6; }
+function timeFor(n){
+  const dt = dateOfDay(dayOf(n));
+  const key = (isWeekend(dt) ? "we" : "wd") + slotOf(n);
+  return sched[key];
+}
+function fmtTime(t){
+  let [h, m] = t.split(":").map(Number);
+  const ap = h >= 12 ? "PM" : "AM";
+  h = h % 12 || 12;
+  return h + ":" + pad(m, 2) + " " + ap;
+}
+function fmtDate(dt, long){
+  return dt.toLocaleDateString(undefined, long
+    ? { weekday:"short", month:"short", day:"numeric", year:"numeric" }
+    : { weekday:"short", month:"short", day:"numeric" });
+}
+function todayDay(){
+  const now = new Date(); now.setHours(0,0,0,0);
+  const d0 = dateOfDay(1); d0.setHours(0,0,0,0);
+  return Math.round((now - d0) / 86400000) + 1;
+}
+function captionFor(n){
+  const i = n - 1;
+  return DATA[i][0] + "\n\n" + CTAS[i % CTAS.length] + "\n\n" + TAGSETS[i % TAGSETS.length];
+}
+
+/* ---------- saving: posted/<reel> docs in the artifact store, localStorage as a quick local copy ---------- */
+const COLL = "posted_v4";
+const SETTINGS_DOC = "settings/schedule_v4";
+const CACHE_KEY = "reel-blotter-v4-cache";
+const PENDING_KEY = "reel-blotter-v4-pending";
+
+const pendingRaw = readJSON(PENDING_KEY);
+const pending = new Map((Array.isArray(pendingRaw) ? pendingRaw : [])
+  .filter(p => Array.isArray(p) && validN(p[0])).map(p => [p[0], !!p[1]]));
+const cachedRaw = readJSON(CACHE_KEY);
+let done = new Set((Array.isArray(cachedRaw) ? cachedRaw : []).filter(validN));
+pending.forEach((want, n) => { if (want) done.add(n); else done.delete(n); });
+
+let db = null, dbState = "waiting", remote = null, firstSnap = true, unsub = null, unsubSched = null;
+let resubscribes = 0, retryTimer = null, retryDelay = 8000, schedDirty = false, schedSaving = false;
+const inflight = new Set(), failed = new Set();
+
+function saveLocal(){ writeJSON(CACHE_KEY, [...done]); writeJSON(PENDING_KEY, [...pending]); }
+
+function toggle(n){
+  const want = !done.has(n);
+  if (want) done.add(n); else done.delete(n);
+  pending.set(n, want);
+  saveLocal(); render(); flush();
+}
+function flush(){
+  if (dbState === "ready") pending.forEach((want, n) => { if (!inflight.has(n)) send(n); });
+  paintSync();
+}
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const GONE = ["revoked","not_granted","capability_disabled","capability_removed"];
+const NO_QUICK_RETRY = ["invalid_argument","transform_error","quota_exceeded","resource_exhausted", ...GONE];
+
+async function send(n){
+  inflight.add(n); paintSync();
+  const want = pending.get(n);
+  const ref = db.collection(COLL).doc("reel_" + pad(n, 4));
+  let ok = false, code = null;
+  for (let a = 0; a < 2; a++){
+    try {
+      if (want) await ref.set({ n, postedAt: new Date().toISOString() }); else await ref.delete();
+      ok = true; break;
+    } catch(e){
+      code = (e && e.code) || "unavailable";
+      if (a === 0 && !NO_QUICK_RETRY.includes(code)) { await sleep(400 + Math.random() * 800); continue; }
+      break;
+    }
+  }
+  inflight.delete(n);
+  if (ok){
+    failed.delete(n); retryDelay = 8000;
+    if (pending.get(n) === want) pending.delete(n);
+    saveLocal();
+    if (pending.has(n) && dbState === "ready") { send(n); return; }
+  } else if (GONE.includes(code)) goLocal("none");
+  else if (code === "invalid_argument" || code === "transform_error") goLocal("readonly");
+  else { failed.add(n); scheduleRetry(); }
+  paintSync();
+}
+function scheduleRetry(){
+  if (retryTimer) return;
+  retryTimer = setTimeout(() => { retryTimer = null; flush(); saveSched(); }, retryDelay);
+  retryDelay = Math.min(retryDelay * 2, 120000);
+}
+function goLocal(state){
+  if (dbState === "none") return;
+  dbState = state;
+  if (state === "none"){
+    [unsub, unsubSched].forEach(u => { if (u) try { u(); } catch(e){} });
+    unsub = unsubSched = null; db = null;
+  }
+  paintSync();
+}
+function onRemote(snap){
+  const s = new Set();
+  snap.docs.forEach(d => {
+    const body = d.data() || {};
+    let n = Number(body.n);
+    if (!validN(n)) n = parseInt(String(d.id).replace(/\D+/g, ""), 10);
+    if (validN(n)) s.add(n);
+  });
+  remote = s;
+  const nextSet = new Set(remote);
+  pending.forEach((want, n) => { if (want) nextSet.add(n); else nextSet.delete(n); });
+  const changed = nextSet.size !== done.size || [...nextSet].some(n => !done.has(n));
+  done = nextSet; writeJSON(CACHE_KEY, [...done]);
+  if (firstSnap){
+    firstSnap = false;
+    if (!navigated) week = defaultWeek();
+    setTimeout(() => {
+      pending.forEach((want, n) => { if (!inflight.has(n) && remote.has(n) === want) pending.delete(n); });
+      saveLocal(); flush();
+    }, 0);
+    render();
+  } else if (changed) render();
+  paintSync();
+}
+function onRemoteSched(snap){
+  if (schedDirty || schedSaving || !snap.exists) return;
+  const s = sanitizeSched(snap.data() || {});
+  const merged = Object.assign({}, RECOMMENDED, s);
+  if (JSON.stringify(merged) !== JSON.stringify(sched)){
+    sched = merged; writeJSON(SCHED_KEY, sched); fillSchedInputs(); render();
+  }
+}
+function subscribe(){
+  try {
+    unsub = db.collection(COLL).onSnapshot(onRemote, err => {
+      unsub = null;
+      if (err && err.code === "unavailable" && resubscribes < 3 && db){
+        resubscribes++; setTimeout(() => { if (db) subscribe(); }, 2000 * resubscribes);
+      } else goLocal("none");
+    });
+    unsubSched = db.doc(SETTINGS_DOC).onSnapshot(onRemoteSched, () => { unsubSched = null; });
+  } catch(e){ goLocal("none"); }
+}
+async function saveSched(){
+  if (dbState !== "ready" || !schedDirty || schedSaving) return;
+  schedSaving = true; paintSync();
+  const body = Object.assign({}, sched, { updatedAt: new Date().toISOString() });
+  try { await db.doc(SETTINGS_DOC).set(body); schedDirty = false; }
+  catch(e){
+    const code = (e && e.code) || "unavailable";
+    if (GONE.includes(code)) goLocal("none");
+    else if (code === "invalid_argument" || code === "transform_error") goLocal("readonly");
+    else scheduleRetry();
+  }
+  schedSaving = false;
+  if (schedDirty && dbState === "ready") saveSched();
+  paintSync();
+}
+async function connect(){
+  const c = window.claude; let ns = null;
+  if (c && typeof c.use === "function"){ try { ns = await c.use("db"); } catch(e){ ns = null; } }
+  if (!ns){ dbState = "none"; paintSync(); return; }
+  db = ns; dbState = "ready"; subscribe(); flush();
+}
+
+const syncEl = document.getElementById("sync"), syncText = document.getElementById("syncText");
+const syncNote = document.getElementById("syncNote"), saveNote = document.getElementById("saveNote");
+function paintSync(){
+  let state, label, note = "";
+  if (dbState === "waiting"){ state = "loading"; label = "Loading…"; }
+  else if (dbState === "none"){ state = "local"; label = "This device"; note = "Saving to your account isn't available in this view, so taps stay on this device. Open the artifact in the Claude app to save them everywhere."; }
+  else if (dbState === "readonly"){ state = "local"; label = "View only"; note = "You can view this page but not change it, so your taps won't be saved."; }
+  else if (inflight.size || schedSaving){ state = "saving"; label = "Saving…"; }
+  else if (failed.size){ state = "error"; label = "Not saved"; note = "Your latest taps haven't saved yet. They're kept on this device and retry automatically."; }
+  else if (pending.size || schedDirty){ state = "saving"; label = "Saving…"; }
+  else if (!remote){ state = "loading"; label = "Loading…"; }
+  else { state = "saved"; label = "Saved"; }
+  syncEl.dataset.state = state; syncText.textContent = label;
+  syncNote.textContent = note; syncNote.hidden = !note;
+  saveNote.textContent = (dbState === "none" || dbState === "readonly")
+    ? "Progress is kept on this device only."
+    : "Posted taps save to your account, so your progress follows you to any device.";
+}
+window.addEventListener("online", () => { flush(); saveSched(); });
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible"){ flush(); render(); } });
+
+/* ---------- UI ---------- */
+let filter = "all", query = "", navigated = false;
+function firstUndone(){ for (let n = 1; n <= DATA.length; n++) if (!done.has(n)) return n; return null; }
+function defaultWeek(){
+  const n = firstUndone();
+  const d = n ? dayOf(n) : DAYS;
+  return Math.min(WEEKS, Math.max(1, weekOfDay(d)));
+}
+let week = defaultWeek();
+
+async function copyText(text, btn){
+  let ok = false;
+  try { await navigator.clipboard.writeText(text); ok = true; }
+  catch(e){
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select(); ok = document.execCommand("copy"); ta.remove();
+    } catch(e2){ ok = false; }
+  }
+  btn.textContent = ok ? "Copied" : "Select manually";
+  btn.classList.toggle("ok", ok);
+  setTimeout(() => { btn.textContent = "Copy caption"; btn.classList.remove("ok"); }, 1600);
+}
+function el(tag, cls, text){ const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+function actionsFor(n){
+  const a = el("div", "actions");
+  const copy = el("button", "copy", "Copy caption"); copy.type = "button";
+  copy.addEventListener("click", () => copyText(captionFor(n), copy));
+  const isDone = done.has(n);
+  const mark = el("button", "mark", isDone ? "Posted" : "Mark posted"); mark.type = "button";
+  mark.setAttribute("aria-pressed", String(isDone));
+  mark.addEventListener("click", () => toggle(n));
+  a.append(copy, mark);
+  return a;
+}
+
+function renderNext(){
+  const box = document.getElementById("next");
+  box.textContent = "";
+  const n = firstUndone();
+  if (n === null){
+    box.append(el("div", "eyebrow", "All scheduled"));
+    box.append(el("p", "quote-lg", "All 1000 are done. Go outside."));
+    return;
+  }
+  const lab = el("div", "eyebrow", "Up next · " + fileName(n)); lab.id = "nextLabel";
+  const d = dayOf(n), dt = dateOfDay(d);
+  const when = el("div", "when", fmtTime(timeFor(n)) + " ");
+  when.append(el("small", null, fmtDate(dt, true) + " · Day " + d));
+  const q = el("p", "quote-lg", DATA[n - 1][1]);
+  const meta = el("div", "meta", "caption: " + DATA[n - 1][0]);
+  box.append(lab, when, q, meta, actionsFor(n));
+  const n2 = n + 1;
+  if (n2 <= DATA.length && !done.has(n2)){
+    const t = el("div", "then");
+    t.append("Then ", el("b", null, fileName(n2)), " at " + fmtTime(timeFor(n2)) + ", " + fmtDate(dateOfDay(dayOf(n2))));
+    box.append(t);
+  }
+}
+
+function passes(n){
+  if (filter === "todo" && done.has(n)) return false;
+  if (filter === "done" && !done.has(n)) return false;
+  const q = query.trim().toLowerCase();
+  if (!q) return true;
+  const [title, quote] = DATA[n - 1];
+  return String(n).includes(q.replace(/^reel_?0*/, "")) || quote.toLowerCase().includes(q) || title.toLowerCase().includes(q);
+}
+
+function makeCard(n){
+  const [title, quote] = DATA[n - 1];
+  const i = n - 1;
+  const li = el("li", done.has(n) ? "is-done" : "");
+  li.id = "reel-" + n;
+  const top = el("div", "top");
+  top.append(el("span", "time", fmtTime(timeFor(n))), el("span", "file", fileName(n)));
+  li.append(top, el("p", "title", title), el("p", "onscreen", quote),
+    el("div", "tags", CTAS[i % CTAS.length] + "  " + TAGSETS[i % TAGSETS.length]), actionsFor(n));
+  return li;
+}
+
+function render(){
+  renderNext();
+  const list = document.getElementById("list");
+  list.textContent = "";
+  const searching = query.trim().length > 0;
+  const today = todayDay();
+  let firstDay, lastDay;
+  if (searching){ firstDay = 1; lastDay = DAYS; }
+  else { firstDay = (week - 1) * 7 + 1; lastDay = Math.min(DAYS, week * 7); }
+
+  let shown = 0, curWeek = null;
+  for (let d = firstDay; d <= lastDay; d++){
+    const reels = [];
+    for (let s = 1; s <= PER_DAY; s++){ const n = (d - 1) * PER_DAY + s; if (n <= DATA.length) reels.push(n); }
+    const vis = reels.filter(passes);
+    if (!vis.length) continue;
+    if (searching && weekOfDay(d) !== curWeek){
+      curWeek = weekOfDay(d);
+      const band = el("div", "weekband"); band.append(el("span", null, "Week " + pad(curWeek, 2)), el("span", "line"));
+      list.append(band);
+    }
+    const g = el("div", "daygroup" + (d === today ? " today" : ""));
+    const head = el("div", "dayhead");
+    head.append(el("span", "dn", "Day " + d + (d === today ? " · today" : "")), el("span", null, fmtDate(dateOfDay(d))), el("span", "line"));
+    const nd = reels.filter(n => done.has(n)).length;
+    head.append(el("span", nd === reels.length ? "tick" : null, nd + "/" + reels.length));
+    const ol = el("ol");
+    vis.forEach(n => { ol.append(makeCard(n)); shown++; });
+    g.append(head, ol);
+    list.append(g);
+  }
+  if (!shown){
+    list.append(el("p", "empty", searching ? "Nothing matches that search."
+      : filter === "todo" ? "Everything this week is posted." : "Nothing posted this week yet."));
+  }
+  document.getElementById("cDone").textContent = done.size;
+  document.getElementById("cBar").style.width = (done.size / DATA.length * 100) + "%";
+  document.getElementById("pageinfo").textContent = searching ? "search results" : ("week " + week + " / " + WEEKS);
+  document.getElementById("prev").disabled = searching || week <= 1;
+  document.getElementById("next-week").disabled = searching || week >= WEEKS;
+  const sel = document.getElementById("weekjump");
+  if (sel.value !== String(week)) sel.value = String(week);
+  paintSchedSummary();
+}
+
+/* ---------- schedule inputs ---------- */
+const IDS = ["wd1","wd2","we1","we2"];
+function fillSchedInputs(){
+  IDS.forEach(k => { document.getElementById(k).value = sched[k]; });
+  document.getElementById("startDate").value = sched.start;
+}
+function paintSchedSummary(){
+  document.getElementById("schedSummary").textContent =
+    "weekdays " + fmtTime(sched.wd1) + " & " + fmtTime(sched.wd2) + " · weekends " + fmtTime(sched.we1) + " & " + fmtTime(sched.we2);
+}
+function onSchedChange(){
+  const next = Object.assign({}, sched);
+  IDS.forEach(k => { const v = document.getElementById(k).value; if (validTime(v)) next[k] = v; });
+  const sd = document.getElementById("startDate").value; if (validDate(sd)) next.start = sd;
+  if (JSON.stringify(next) === JSON.stringify(sched)) return;
+  sched = next; writeJSON(SCHED_KEY, sched); schedDirty = true;
+  render(); saveSched();
+}
+IDS.concat("startDate").forEach(id => document.getElementById(id).addEventListener("change", onSchedChange));
+document.getElementById("resetSched").addEventListener("click", () => {
+  sched = Object.assign({}, RECOMMENDED); fillSchedInputs(); writeJSON(SCHED_KEY, sched);
+  schedDirty = true; render(); saveSched();
+});
+
+/* ---------- controls ---------- */
+const sel = document.getElementById("weekjump");
+for (let w = 1; w <= WEEKS; w++){
+  const o = document.createElement("option");
+  const a = (w - 1) * 7 + 1;
+  o.value = String(w); o.textContent = "Week " + pad(w, 2) + " · days " + a + "–" + Math.min(DAYS, a + 6);
+  sel.append(o);
+}
+sel.addEventListener("change", e => { week = Number(e.target.value); navigated = true; render(); });
+document.querySelectorAll(".filters button").forEach(b => {
+  b.addEventListener("click", () => {
+    filter = b.dataset.f;
+    document.querySelectorAll(".filters button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    render();
+  });
+});
+document.getElementById("search").addEventListener("input", e => { query = e.target.value; render(); });
+document.getElementById("prev").addEventListener("click", () => { week--; navigated = true; render(); document.getElementById("list").scrollIntoView({ block:"start" }); });
+document.getElementById("next-week").addEventListener("click", () => { week++; navigated = true; render(); document.getElementById("list").scrollIntoView({ block:"start" }); });
+
+fillSchedInputs();
+render();
+paintSync();
+connect();
+</script>
