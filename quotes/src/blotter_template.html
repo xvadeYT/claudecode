@@ -167,6 +167,7 @@
     font-variant-numeric:tabular-nums; white-space:nowrap;
   }
   li.is-done .time { background:var(--done-s); color:var(--done); }
+  .cover { font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; color:var(--muted); white-space:nowrap; }
   .file {
     font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:600;
     color:var(--accent); font-variant-numeric:tabular-nums; white-space:nowrap;
@@ -268,8 +269,8 @@
   </div>
 
   <footer>
-    <p>Two reels a day for 500 days. Files render to <code>Downloads\REELS_GENZ_V4\reel_0001.mp4 … reel_1000.mp4</code> from <code>QUOTES_GENZ_V4.txt</code>, where line 1 is reel_0001.</p>
-    <p>In Instagram: pick the reel → add music &amp; cover → tap <b>Copy</b> here and paste → <b>More options → Schedule this Reel</b> at the time shown. Instagram lets you schedule up to 75 days ahead, so do it a few weeks at a time.</p>
+    <p>Two reels a day for 500 days. Files render to <code>Downloads\REELS_GENZ_V4\reel_0001.mp4 … reel_1000.mp4</code> from <code>QUOTES_GENZ_V4.txt</code>, where line 1 is reel_0001. Each reel has a matching cover: <code>cover_0001.jpg … cover_1000.jpg</code>.</p>
+    <p>In Instagram: pick the reel → add music → <b>Edit cover → Add from camera roll</b> and pick the matching <code>cover_NNNN.jpg</code> → tap <b>Copy</b> here and paste → <b>More options → Schedule this Reel</b> at the time shown. Instagram lets you schedule up to 75 days ahead, so do it a few weeks at a time.</p>
     <p id="saveNote">Posted taps save to your account, so your progress follows you to any device.</p>
   </footer>
 </div>
@@ -308,6 +309,7 @@ const validN = n => Number.isInteger(n) && n >= 1 && n <= DATA.length;
 const validTime = t => typeof t === "string" && /^\d{2}:\d{2}$/.test(t);
 const validDate = d => typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d);
 const fileName = n => "reel_" + pad(n, 4) + ".mp4";
+const coverName = n => "cover_" + pad(n, 4) + ".jpg";
 const dayOf = n => Math.ceil(n / PER_DAY);
 const slotOf = n => ((n - 1) % PER_DAY) + 1;
 const weekOfDay = d => Math.ceil(d / 7);
@@ -563,7 +565,7 @@ function renderNext(){
   const when = el("div", "when", fmtTime(timeFor(n)) + " ");
   when.append(el("small", null, fmtDate(dt, true) + " · Day " + d));
   const q = el("p", "quote-lg", DATA[n - 1][1]);
-  const meta = el("div", "meta", "caption: " + DATA[n - 1][0]);
+  const meta = el("div", "meta", "cover: " + coverName(n) + " · caption: " + DATA[n - 1][0]);
   box.append(lab, when, q, meta, actionsFor(n));
   const n2 = n + 1;
   if (n2 <= DATA.length && !done.has(n2)){
@@ -588,7 +590,7 @@ function makeCard(n){
   const li = el("li", done.has(n) ? "is-done" : "");
   li.id = "reel-" + n;
   const top = el("div", "top");
-  top.append(el("span", "time", fmtTime(timeFor(n))), el("span", "file", fileName(n)));
+  top.append(el("span", "time", fmtTime(timeFor(n))), el("span", "file", fileName(n)), el("span", "cover", "+ " + coverName(n)));
   li.append(top, el("p", "title", title), el("p", "onscreen", quote),
     el("div", "tags", CTAS[i % CTAS.length] + "  " + TAGSETS[i % TAGSETS.length]), actionsFor(n));
   return li;

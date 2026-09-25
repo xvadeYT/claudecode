@@ -5,7 +5,7 @@ Everything important sits inside the middle 1080x1440, because the Instagram
 profile grid crops reel covers to 3:4 from the center.
 
     python3 covers/covers.py            # render the options
-    python3 covers/covers.py C 1 1000   # render cover_0001..cover_1000 for option C
+    python3 covers/covers.py C 1 1000   # render final/cover_0001.jpg..cover_1000.jpg for option C
 """
 import asyncio, os, sys
 from playwright.async_api import async_playwright
@@ -14,7 +14,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 FONTS = open(os.path.join(HERE, "fonts.css")).read().replace("url(fonts/", "url(file://" + HERE + "/fonts/")
 LOGO = "file://" + os.path.join(HERE, "logo.png")
 
-BG = "#0E0E0E"
+BG = "#111111"
 BASE = f"""
 *{{margin:0;padding:0;box-sizing:border-box}}
 html,body{{width:1080px;height:1920px;overflow:hidden;background:{BG}}}
@@ -57,7 +57,7 @@ def opt_b(n):  # Logo + ADM
 def opt_c(n):  # Numbered
     return f"""<div class="stage">{logo(640)}
 <div style="font-family:Anton;font-size:250px;line-height:1;color:#8A8A8A;letter-spacing:.06em;margin-top:0">{n:04d}</div>
-<div class="lab" style="font-size:30px;margin-top:26px">of 1000</div></div>"""
+<div class="lab" style="font-size:27px;letter-spacing:.42em;padding-left:.42em;color:#6A6A6A;margin-top:34px">i will become a millionaire</div></div>"""
 
 def opt_d(n):  # Plain silhouette, nothing else
     return f'<div class="stage">{silhouette(1000)}</div>'
@@ -80,7 +80,7 @@ async def render(jobs):
             open(tmp, "w").write(page(body))
             await pg.goto("file://" + tmp)
             await pg.evaluate("document.fonts.ready")
-            await pg.screenshot(path=path)
+            await pg.screenshot(path=path, **({"type": "jpeg", "quality": 88} if path.endswith(".jpg") else {}))
         os.remove(tmp)
         await b.close()
 
@@ -89,7 +89,7 @@ if __name__ == "__main__":
         key = next(k for k in OPTIONS if k.startswith(sys.argv[1].upper()))
         out = os.path.join(HERE, "final")
         os.makedirs(out, exist_ok=True)
-        jobs = [(os.path.join(out, f"cover_{n:04d}.png"), OPTIONS[key](n)) for n in range(int(sys.argv[2]), int(sys.argv[3]) + 1)]
+        jobs = [(os.path.join(out, f"cover_{n:04d}.jpg"), OPTIONS[key](n)) for n in range(int(sys.argv[2]), int(sys.argv[3]) + 1)]
     else:
         os.makedirs(os.path.join(HERE, "options"), exist_ok=True)
         jobs = [(os.path.join(HERE, "options", f"{k}.png"), f(1)) for k, f in OPTIONS.items()]
