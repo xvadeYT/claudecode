@@ -1,10 +1,10 @@
 """Build the V4 reel library: posting order, render file, schedule CSV and the Reel Blotter page.
 
-Sources are quotes/src/batchNN.txt, one reel per line as `caption title|on-screen quote`.
+Sources are _WORKSHOP/quotes/batchNN.txt, one reel per line as `caption title|on-screen quote`.
 Each batch is one theme, so the posting order deals them out round-robin: two reels
 in a row never come from the same theme.
 
-    python3 quotes/build.py
+    python3 _WORKSHOP/build_reels.py
 """
 import csv
 import datetime as dt
@@ -15,16 +15,17 @@ import random
 import re
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SRC = os.path.join(HERE, "src")
-OUT_QUOTES = os.path.join(HERE, "QUOTES_GENZ_V4.txt")
-OUT_CSV = os.path.join(HERE, "SCHEDULE_V4.csv")
-OUT_HTML = os.path.join(HERE, "reel-blotter.html")
+ROOT = os.path.dirname(HERE)
+SRC = os.path.join(HERE, "quotes")
+OUT_QUOTES = os.path.join(ROOT, "QUOTES", "QUOTES_GENZ_V4.txt")
+OUT_CSV = os.path.join(ROOT, "QUOTES", "SCHEDULE_V4.csv")
+OUT_HTML = os.path.join(ROOT, "BLOTTER", "reel-blotter.html")
 
 START = dt.date(2026, 9, 26)
 # Recommended defaults, local time. Slot 1 = midday scroll, slot 2 = just before the evening peak.
 TIMES = {"weekday": ("12:00", "19:00"), "weekend": ("11:00", "20:00")}
 
-# Keep in sync with TAGSETS / CTAS in src/blotter_template.html.
+# Keep in sync with TAGSETS / CTAS in quotes/blotter_template.html.
 TAGSETS = [
     "#relatable #motivation #motivationalquotes #successmindset #explorepage",
     "#relatable #motivation #selfimprovement #discipline #reels",

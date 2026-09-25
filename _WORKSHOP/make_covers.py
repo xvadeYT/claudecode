@@ -1,18 +1,19 @@
 """Render ADM reel cover options (1080x1920) with Playwright.
 
-Built on the crowned-figure logo (logo.png, 2000x2000, background #111111).
+Built on the crowned-figure logo (BRAND/logo.png, 2000x2000, background #111111).
 Everything important sits inside the middle 1080x1440, because the Instagram
 profile grid crops reel covers to 3:4 from the center.
 
-    python3 covers/covers.py            # render the options
-    python3 covers/covers.py C 1 1000   # render final/cover_0001.jpg..cover_1000.jpg for option C
+    python3 _WORKSHOP/make_covers.py            # render the design options into _WORKSHOP/cover-options/
+    python3 _WORKSHOP/make_covers.py C 1 1000   # render COVERS/cover_0001.jpg..cover_1000.jpg with option C
 """
 import asyncio, os, sys
 from playwright.async_api import async_playwright
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(HERE)
 FONTS = open(os.path.join(HERE, "fonts.css")).read().replace("url(fonts/", "url(file://" + HERE + "/fonts/")
-LOGO = "file://" + os.path.join(HERE, "logo.png")
+LOGO = "file://" + os.path.join(ROOT, "BRAND", "logo.png")
 
 BG = "#111111"
 BASE = f"""
@@ -71,9 +72,15 @@ OPTIONS = {"A_logo": opt_a, "B_logo_adm": opt_b, "C_numbered": opt_c, "D_plain":
 def page(body):
     return f"<!doctype html><html><head><meta charset=utf8><style>{FONTS}{BASE}</style></head><body>{body}<div class=vig></div>{GRAIN}</body></html>"
 
+def chrome_path():
+    """$CHROME if set, else the preinstalled cloud Chromium, else Playwright's own browser."""
+    if os.environ.get("CHROME"):
+        return os.environ["CHROME"]
+    return "/opt/pw-browsers/chromium" if os.path.exists("/opt/pw-browsers/chromium") else None
+
 async def render(jobs):
     async with async_playwright() as p:
-        b = await p.chromium.launch(executable_path=os.environ.get("CHROME") or None) if os.environ.get("CHROME") is not None else await p.chromium.launch(executable_path="/opt/pw-browsers/chromium") if os.path.exists("/opt/pw-browsers/chromium") else await p.chromium.launch()
+        b = await p.chromium.launch(executable_path=chrome_path())
         pg = await b.new_page(viewport={"width": 1080, "height": 1920})
         tmp = os.path.join(HERE, "_tmp.html")
         for path, body in jobs:
@@ -87,11 +94,11 @@ async def render(jobs):
 if __name__ == "__main__":
     if len(sys.argv) == 4:
         key = next(k for k in OPTIONS if k.startswith(sys.argv[1].upper()))
-        out = os.path.join(HERE, "final")
+        out = os.path.join(ROOT, "COVERS")
         os.makedirs(out, exist_ok=True)
         jobs = [(os.path.join(out, f"cover_{n:04d}.jpg"), OPTIONS[key](n)) for n in range(int(sys.argv[2]), int(sys.argv[3]) + 1)]
     else:
-        os.makedirs(os.path.join(HERE, "options"), exist_ok=True)
-        jobs = [(os.path.join(HERE, "options", f"{k}.png"), f(1)) for k, f in OPTIONS.items()]
+        os.makedirs(os.path.join(HERE, "cover-options"), exist_ok=True)
+        jobs = [(os.path.join(HERE, "cover-options", f"{k}.png"), f(1)) for k, f in OPTIONS.items()]
     asyncio.run(render(jobs))
     print("rendered", len(jobs))

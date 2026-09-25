@@ -1,7 +1,9 @@
 import asyncio, os, glob
 from playwright.async_api import async_playwright
+from make_covers import chrome_path
+"""Put the rendered design options side by side in BRAND/cover-options.png. Run make_covers.py first."""
 HERE=os.path.dirname(os.path.abspath(__file__))
-files=sorted(glob.glob(os.path.join(HERE,'options','[A-Z]_*.png')))
+files=sorted(glob.glob(os.path.join(HERE,'cover-options','[A-Z]_*.png')))
 cells=''.join(f"""<figure><div class="f"><img src="file://{p}"><i></i></div><figcaption>{os.path.basename(p)[0]} · {os.path.basename(p)[2:-4]}</figcaption></figure>""" for p in files)
 html=f"""<!doctype html><html><head><meta charset=utf8><style>{open(os.path.join(HERE,'fonts.css')).read().replace('url(fonts/','url(file://'+HERE+'/fonts/')}
 body{{margin:0;background:#1a1a18;padding:40px;display:flex;gap:30px;width:max-content}}
@@ -12,10 +14,10 @@ figcaption{{font-family:'JetBrains Mono';font-weight:700;font-size:26px;color:#e
 open(os.path.join(HERE,'_sheet.html'),'w').write(html)
 async def main():
     async with async_playwright() as p:
-        b=await p.chromium.launch(executable_path=os.environ.get("CHROME","/opt/pw-browsers/chromium"))
+        b=await p.chromium.launch(executable_path=chrome_path())
         pg=await b.new_page(viewport={'width':1980,'height':800})
         await pg.goto('file://'+os.path.join(HERE,'_sheet.html')); await pg.evaluate("document.fonts.ready")
-        await pg.screenshot(path=os.path.join(HERE,'options','_ALL_OPTIONS.png'),full_page=True)
+        await pg.screenshot(path=os.path.join(os.path.dirname(HERE),'BRAND','cover-options.png'),full_page=True)
         await b.close()
     os.remove(os.path.join(HERE,'_sheet.html'))
 asyncio.run(main())
